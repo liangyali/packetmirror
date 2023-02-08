@@ -42,7 +42,7 @@ func (h *httpStreamFactory) New(net, transport gopacket.Flow) tcpassembly.Stream
 		transport: transport,
 		r:         tcpreader.NewReaderStream(),
 	}
-	go hstream.run(h.config) // Important... we must guarantee that data from the reader stream is read.
+	go hstream.run(h.config)
 
 	// ReaderStream implements tcpassembly.Stream, so we can return a pointer to it.
 	return &hstream.r
