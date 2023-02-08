@@ -73,9 +73,10 @@ func (h *httpStream) request(req *http.Request, config config.Config) {
 	}()
 
 	log.WithFields(log.Fields{
-		"url":        req.RequestURI,
-		"remoteAdde": req.RemoteAddr,
-	}).Info("http request")
+		"url":    req.RequestURI,
+		"method": req.Method,
+		"query":  req.URL.RawQuery,
+	}).Debug("http request")
 
 	URL, err := url.Parse(config.OutputHttp)
 	if err != nil {
@@ -107,8 +108,6 @@ func (h *httpStream) request(req *http.Request, config config.Config) {
 		log.Error(err)
 		panic(err)
 	}
-
-	// req.Body.Close()
 
 	log.WithFields(log.Fields{
 		"dst": config.OutputHttp,

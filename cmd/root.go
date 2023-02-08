@@ -10,7 +10,7 @@ import (
 func Run() error {
 
 	device := flag.String("device", "", "device name for interface")
-	verbose := flag.Bool("verbose", true, "")
+	debug := flag.Bool("debug", false, "")
 	inputFilter := flag.String("input-filter", "", "bbfilter query")
 	outputHttp := flag.String("output-http", "http://127.0.0.1:80", "http forward address (http://127.0.0.1:80).")
 	outputUdp := flag.String("output-udp", "127.0.0.1:80", "udf forward addess (127.0.0.1:80).")
@@ -40,16 +40,14 @@ func Run() error {
 		options = append(options, mirror.WithOutputUdp(*outputUdp))
 	}
 
-	if *verbose {
-		log.SetReportCaller(false)
+	if *debug == true {
 		log.SetLevel(log.DebugLevel)
 		log.SetFormatter(&log.TextFormatter{
 			DisableColors: false,
 			FullTimestamp: true,
 		})
 	} else {
-		log.SetReportCaller(false)
-		log.SetLevel(log.ErrorLevel)
+		log.SetLevel(log.InfoLevel)
 		log.SetFormatter(&log.TextFormatter{
 			DisableColors: false,
 			FullTimestamp: true,

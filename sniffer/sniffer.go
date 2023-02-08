@@ -37,6 +37,7 @@ func (s *Sniffer) Run() error {
 
 	g, ctx := errgroup.WithContext(context.Background())
 	g.Go(func() error {
+		log.Info("started")
 		return s.sniffStatic(ctx)
 	})
 
