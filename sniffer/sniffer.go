@@ -7,18 +7,20 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
+	"github.com/liangyali/packetmirror/config"
 	"github.com/liangyali/packetmirror/processor"
-	"github.com/liangyali/packetmirror/settings"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 )
 
 type Sniffer struct {
-	settings settings.Settings
+	config config.Config
 }
 
-func New(settings settings.Settings) *Sniffer {
+func New(config config.Config) *Sniffer {
+	log.Debug(config)
 	return &Sniffer{
-		settings: settings,
+		config: config,
 	}
 }
 
@@ -43,22 +45,19 @@ func (s *Sniffer) Run() error {
 
 // sniffStatic performs the sniffing work on a single static interface.
 func (s *Sniffer) sniffStatic(ctx context.Context) error {
-	handle, err := pcap.OpenLive(s.settings.Device, 1024, true, 500*time.Millisecond)
+	handle, err := pcap.OpenLive(s.config.Device, 1024*2, true, 500*time.Millisecond)
 	if err != nil {
+		log.Error(err)
 		return err
 	}
 
-	err = handle.SetBPFFilter(s.settings.InputFilter)
+	err = handle.SetBPFFilter(s.config.InputFilter)
 	if err != nil {
+		log.Error(err)
 		handle.Close()
 		return err
 	}
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
-	for packet := range packetSource.Packets() {
-		go func(packet gopacket.Packet, options settings.Settings) {
-			processor.Process(packet, options)
-		}(packet, s.settings)
-	}
-
+	processor.Process(packetSource.Packets(), s.config)
 	return nil
 }

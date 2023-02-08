@@ -1,7 +1,7 @@
 package mirror
 
 import (
-	"github.com/liangyali/packetmirror/settings"
+	"github.com/liangyali/packetmirror/config"
 	"github.com/liangyali/packetmirror/sniffer"
 )
 
@@ -54,11 +54,12 @@ func New(options ...Option) *PacketMirror {
 
 func (p *PacketMirror) Start() error {
 
-	sniffer := sniffer.New(settings.Settings{
+	sniffer := sniffer.New(config.Config{
 		Device:      p.device,
 		InputFilter: p.inputFilter,
 		OutputHttp:  p.outputHttp,
 		OutputUdp:   p.outputUDP,
 	})
+
 	return sniffer.Run()
 }

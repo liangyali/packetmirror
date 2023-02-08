@@ -4,14 +4,16 @@ import (
 	"flag"
 
 	"github.com/liangyali/packetmirror/internal/mirror"
+	log "github.com/sirupsen/logrus"
 )
 
 func Run() error {
 
-	device := flag.String("device", "", "网卡名称")
-	inputFilter := flag.String("input-filter", "", "流量过滤条件")
-	outputHttp := flag.String("output-http", "http://127.0.0.1:80", "http转发目标地址.")
-	outputUdp := flag.String("output-udp", "127.0.0.1:80", "udp转发目标地址.")
+	device := flag.String("device", "", "device name for interface")
+	verbose := flag.Bool("verbose", true, "")
+	inputFilter := flag.String("input-filter", "", "bbfilter query")
+	outputHttp := flag.String("output-http", "http://127.0.0.1:80", "http forward address (http://127.0.0.1:80).")
+	outputUdp := flag.String("output-udp", "127.0.0.1:80", "udf forward addess (127.0.0.1:80).")
 
 	flag.Parse()
 
@@ -36,6 +38,22 @@ func Run() error {
 	// 设置UDP转发的目标地址
 	if *outputUdp != "" {
 		options = append(options, mirror.WithOutputUdp(*outputUdp))
+	}
+
+	if *verbose {
+		log.SetReportCaller(false)
+		log.SetLevel(log.DebugLevel)
+		log.SetFormatter(&log.TextFormatter{
+			DisableColors: false,
+			FullTimestamp: true,
+		})
+	} else {
+		log.SetReportCaller(false)
+		log.SetLevel(log.ErrorLevel)
+		log.SetFormatter(&log.TextFormatter{
+			DisableColors: false,
+			FullTimestamp: true,
+		})
 	}
 
 	packetmirror := mirror.New(options...)
