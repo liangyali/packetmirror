@@ -103,11 +103,13 @@ func (h *httpStream) request(req *http.Request, config config.Config) {
 	}
 	client := &http.Client{Transport: tr}
 
-	_, err = client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		log.Error(err)
 		panic(err)
 	}
+
+	defer resp.Body.Close()
 
 	log.WithFields(log.Fields{
 		"dst": config.OutputHttp,
