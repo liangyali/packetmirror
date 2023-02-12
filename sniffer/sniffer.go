@@ -46,7 +46,7 @@ func (s *Sniffer) Run() error {
 
 // sniffStatic performs the sniffing work on a single static interface.
 func (s *Sniffer) sniffStatic(ctx context.Context) error {
-	handle, err := pcap.OpenLive(s.config.Device, 1024*2, true, 500*time.Millisecond)
+	handle, err := pcap.OpenLive(s.config.Device, 1024*5, true, 2*time.Second)
 	if err != nil {
 		log.Error(err)
 		return err

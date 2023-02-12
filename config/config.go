@@ -5,4 +5,5 @@ type Config struct {
 	InputFilter string
 	OutputHttp  string
 	OutputUdp   string
+	Debug       bool
 }

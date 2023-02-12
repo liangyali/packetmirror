@@ -54,6 +54,8 @@ func Run() error {
 		})
 	}
 
+	options = append(options, mirror.WithDebug(*debug))
+
 	packetmirror := mirror.New(options...)
 
 	// 启动服务

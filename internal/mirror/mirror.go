@@ -10,6 +10,7 @@ type PacketMirror struct {
 	inputFilter string // 流量过滤条件参考BFFilter
 	outputHttp  string // http目标地址
 	outputUDP   string //udp目标地址
+	debug       bool
 }
 
 type Option func(*PacketMirror)
@@ -42,6 +43,13 @@ func WithOutputUdp(s string) Option {
 	}
 }
 
+// WithOutputUdp option
+func WithDebug(debug bool) Option {
+	return func(v *PacketMirror) {
+		v.debug = debug
+	}
+}
+
 func New(options ...Option) *PacketMirror {
 	packetMirror := &PacketMirror{}
 
@@ -59,6 +67,7 @@ func (p *PacketMirror) Start() error {
 		InputFilter: p.inputFilter,
 		OutputHttp:  p.outputHttp,
 		OutputUdp:   p.outputUDP,
+		Debug:       p.debug,
 	})
 
 	return sniffer.Run()

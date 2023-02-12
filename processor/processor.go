@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -73,11 +75,28 @@ func (h *httpStream) request(req *http.Request, config config.Config) {
 		}
 	}()
 
-	log.WithFields(log.Fields{
-		"url":    req.RequestURI,
-		"method": req.Method,
-		"query":  req.URL.RawQuery,
-	}).Debug("http request")
+	if config.Debug {
+		var builder strings.Builder
+
+		builder.WriteString("TCP ")
+		builder.WriteString("【")
+		builder.WriteString(h.net.Src().String())
+		builder.WriteString(":")
+		builder.WriteString(h.transport.Src().String())
+		builder.WriteString("】")
+		builder.WriteString("=>")
+
+		builder.WriteString("【")
+		builder.WriteString(h.net.Dst().String())
+		builder.WriteString(":")
+		builder.WriteString(h.transport.Dst().String())
+		builder.WriteString("】")
+
+		log.WithFields(log.Fields{
+			"url":    req.RequestURI,
+			"method": req.Method,
+		}).Debug(builder.String())
+	}
 
 	URL, err := url.Parse(config.OutputHttp)
 	if err != nil {
@@ -95,14 +114,15 @@ func (h *httpStream) request(req *http.Request, config config.Config) {
 	delete(req.Header, "Accept-Encoding")
 	delete(req.Header, "Content-Length")
 
-	req.Header.Set("Packet-Mirror-Ts", time.Now().UTC().String())
+	req.Header.Set("Packet-Mirror-Ts", strconv.Itoa(int(time.Now().Unix())))
 
 	tr := &http.Transport{
-		MaxIdleConns:       10,
-		IdleConnTimeout:    30 * time.Second,
-		DisableCompression: true,
+		MaxIdleConns:          10,
+		IdleConnTimeout:       30 * time.Second,
+		DisableCompression:    true,
+		ResponseHeaderTimeout: 5 * time.Second,
 	}
-	client := &http.Client{Transport: tr}
+	client := &http.Client{Transport: tr, Timeout: 3 * time.Second}
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -111,11 +131,6 @@ func (h *httpStream) request(req *http.Request, config config.Config) {
 	}
 
 	defer resp.Body.Close()
-
-	log.WithFields(log.Fields{
-		"dst":    config.OutputHttp,
-		"remote": req.RemoteAddr,
-	}).Debug("forward http packet success!")
 }
 
 var udpProcessor = UdpProcessor{}
@@ -153,7 +168,7 @@ func Process(packets chan gopacket.Packet, config config.Config) {
 
 		case <-ticker:
 			// Every minute, flush connections that haven't seen activity in the past 2 minutes.
-			assembler.FlushOlderThan(time.Now().Add(time.Minute * -5))
+			assembler.FlushOlderThan(time.Now().Add(time.Minute * -2))
 		}
 	}
 }
