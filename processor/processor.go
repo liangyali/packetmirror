@@ -2,6 +2,7 @@ package processor
 
 import (
 	"bufio"
+	"context"
 	"io"
 	"net/http"
 	"net/url"
@@ -59,7 +60,7 @@ func (h *httpStream) run(config config.Config) {
 		} else if err != nil {
 			// pass
 		} else {
-			h.request(req, config)
+			h.request(req.Clone(context.Background()), config)
 		}
 	}
 }
@@ -112,7 +113,8 @@ func (h *httpStream) request(req *http.Request, config config.Config) {
 	defer resp.Body.Close()
 
 	log.WithFields(log.Fields{
-		"dst": config.OutputHttp,
+		"dst":    config.OutputHttp,
+		"remote": req.RemoteAddr,
 	}).Debug("forward http packet success!")
 }
 
@@ -141,6 +143,7 @@ func Process(packets chan gopacket.Packet, config config.Config) {
 					udpProcessor.Process(packet, config)
 					continue
 				}
+
 				log.Println("Unusable packet")
 				continue
 			}
@@ -150,7 +153,7 @@ func Process(packets chan gopacket.Packet, config config.Config) {
 
 		case <-ticker:
 			// Every minute, flush connections that haven't seen activity in the past 2 minutes.
-			assembler.FlushOlderThan(time.Now().Add(time.Minute * -2))
+			assembler.FlushOlderThan(time.Now().Add(time.Minute * -5))
 		}
 	}
 }

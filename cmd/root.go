@@ -10,7 +10,7 @@ import (
 func Run() error {
 
 	device := flag.String("device", "", "device name for interface")
-	debug := flag.Bool("debug", false, "")
+	debug := flag.Bool("debug", false, "debug mode default(false)")
 	inputFilter := flag.String("input-filter", "", "bbfilter query")
 	outputHttp := flag.String("output-http", "http://127.0.0.1:80", "http forward address (http://127.0.0.1:80).")
 	outputUdp := flag.String("output-udp", "127.0.0.1:80", "udf forward addess (127.0.0.1:80).")
